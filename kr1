@@ -1,0 +1,29 @@
+CREATE TABLE books (
+    id INT PRIMARY KEY,
+    title VARCHAR(100),
+    author VARCHAR(50),
+    year INT
+);
+SET SESSION cte_max_recursion_depth = 150000;
+
+INSERT INTO books (id, title, author, year)
+WITH RECURSIVE numbers (n) AS (
+    SELECT 0
+    UNION ALL
+    SELECT n + 1 FROM numbers WHERE n < 149999
+)
+SELECT 
+    n + 1 AS id,
+    CONCAT('Book', n + 1) AS title,
+    CONCAT('Author', FLOOR(RAND() * 100)) AS author,
+    1950 + FLOOR(RAND() * 70) AS year
+FROM numbers;
+ALTER TABLE books
+ADD FULLTEXT(title, author);
+SELECT *
+FROM books
+WHERE MATCH(title, author) AGAINST('Book 10' IN NATURAL LANGUAGE MODE);
+
+EXPLAIN SELECT *
+FROM books
+WHERE MATCH(title, author) AGAINST('Book 10' IN NATURAL LANGUAGE MODE);
